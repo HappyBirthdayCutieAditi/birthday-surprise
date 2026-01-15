@@ -1,0 +1,325 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Surprise</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:'Poppins',system-ui,sans-serif;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,120,160,.35) 0 60px, transparent 65px),
+    radial-gradient(circle at 80% 25%, rgba(255,150,190,.35) 0 50px, transparent 55px),
+    radial-gradient(circle at 30% 60%, rgba(255,180,210,.35) 0 70px, transparent 75px),
+    radial-gradient(circle at 70% 70%, rgba(255,140,180,.35) 0 60px, transparent 65px),
+    linear-gradient(180deg,#ff2f6d,#ff6f9f,#ff9fbc,#ff6f9f,#ff2f6d);
+  overflow:hidden;
+}
+
+.hearts{position:fixed;inset:0;pointer-events:none;}
+.heart{
+  position:absolute;
+  bottom:-10%;
+  font-size:18px;
+  opacity:.35;
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{
+  from{transform:translateY(0) scale(.8);opacity:0}
+  10%{opacity:1}
+  to{transform:translateY(-120vh) scale(1.4);opacity:0}
+}
+
+.card{
+  width:90%;
+  max-width:380px;
+  background:rgba(255,255,255,0.28);
+  backdrop-filter:blur(18px);
+  border-radius:28px;
+  padding:26px 22px 32px;
+  text-align:center;
+  box-shadow:0 28px 70px rgba(0,0,0,.25);
+  color:#fff;
+  z-index:1;
+}
+.hidden{display:none;}
+h1{font-size:22px;margin:8px 0;}
+h2{font-size:16px;margin:8px 0;opacity:.95;}
+.timer{font-size:14px;opacity:.9;margin-bottom:14px;}
+
+button{
+  border:none;
+  padding:14px 24px;
+  border-radius:32px;
+  font-size:15px;
+  cursor:pointer;
+  margin:6px;
+}
+.primary{background:linear-gradient(135deg,#ff4f81,#ff2f6d);color:white;}
+.secondary{background:linear-gradient(135deg,#ffd6e3,#ffc0d4);color:#9a0038;}
+
+.progress{height:8px;background:rgba(255,255,255,.35);border-radius:10px;overflow:hidden;margin:10px 0;}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff4f81,#ff2f6d);}
+.counter{font-size:14px;opacity:.9;margin-bottom:6px;}
+
+.cake{width:260px;margin:18px auto;cursor:pointer;}
+.flame{fill:#ffcc33;filter:drop-shadow(0 0 8px #ffcc33);}
+.flame.off{fill:#777;filter:none;}
+
+.slide-img{width:100%;height:240px;object-fit:cover;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,.35);margin:14px 0;}
+.caption{font-size:17px;font-weight:500;margin-bottom:14px;}
+.controls{display:flex;align-items:center;justify-content:space-between;}
+.nav-btn{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#ffffff66,#ffffff22);display:flex;align-items:center;justify-content:center;font-size:22px;color:#ff2f6d;}
+.play-btn{flex:1;margin:0 12px;background:linear-gradient(135deg,#ff4f81,#ff2f6d);color:white;font-size:16px;}
+
+.letter-icon{font-size:90px;cursor:pointer;animation:pulse 1.6s infinite;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.letter-wrapper{background:linear-gradient(180deg,#fff0f6,#ffe0ec);border-radius:22px;padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.3);}
+.letter-box{color:#ff2f6d;font-size:17px;line-height:1.9;white-space:pre-line;}
+</style>
+</head>
+
+<body>
+
+<div class="hearts">
+  <span class="heart" style="left:10%;animation-duration:18s;">❤️</span>
+  <span class="heart" style="left:30%;animation-duration:22s;">💖</span>
+  <span class="heart" style="left:50%;animation-duration:20s;">💕</span>
+  <span class="heart" style="left:70%;animation-duration:24s;">❤️</span>
+  <span class="heart" style="left:90%;animation-duration:19s;">💗</span>
+</div>
+
+<!-- SCREEN 1 -->
+<div class="card" id="screen1">
+  <h1>⏳ Countdown</h1>
+  <div class="timer" id="countdown"></div>
+  <h1>Something truly special<br>for you, Aditi ❤️</h1>
+  <button class="primary" onclick="goQuestions()">🎁 Open Your Surprise</button>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="card hidden" id="screen2">
+  <h1>Are you ready for a surprise?</h1>
+  <button class="primary" onclick="startQuestions()">YES ✨</button>
+  <button class="secondary" onclick="startQuestions()">NO 😏</button>
+</div>
+
+<!-- QUESTIONS -->
+<div class="card hidden" id="screenQ">
+  <div class="counter" id="qCounter"></div>
+  <div class="progress"><span id="bar"></span></div>
+  <h1 id="question"></h1>
+  <button class="primary" onclick="answerQ('yes')">YES 💖</button>
+  <button class="secondary" onclick="answerQ('no')">NO 😜</button>
+  <h2 id="reaction"></h2>
+</div>
+
+<!-- GIFT -->
+<div class="card hidden" id="screenGift">
+  <h1>Here's a small gift for you 💝</h1>
+  <div style="font-size:80px;cursor:pointer" onclick="openCake()">🎁</div>
+  <h2>Tap to open</h2>
+</div>
+
+<!-- CAKE -->
+<div class="card hidden" id="screenCake">
+  <h1 id="cakeText">Blow the candle in 3</h1>
+  <svg class="cake" viewBox="0 0 300 260" onclick="celebrate()">
+    <rect x="45" y="150" rx="30" ry="30" width="210" height="80" fill="#b86b3c"/>
+    <rect x="45" y="120" rx="28" ry="28" width="210" height="45" fill="#ffe0b2"/>
+    <rect x="45" y="95" rx="28" ry="28" width="210" height="35" fill="#ffb6c9"/>
+    <rect x="120" y="45" width="14" height="50" fill="#6ec6ff"/>
+    <rect x="143" y="45" width="14" height="50" fill="#ff8fa3"/>
+    <rect x="166" y="45" width="14" height="50" fill="#6ec6ff"/>
+    <ellipse id="f1" class="flame" cx="127" cy="35" rx="7" ry="12"/>
+    <ellipse id="f2" class="flame" cx="150" cy="35" rx="7" ry="12"/>
+    <ellipse id="f3" class="flame" cx="173" cy="35" rx="7" ry="12"/>
+  </svg>
+</div>
+
+<!-- SLIDES -->
+<div class="card hidden" id="screenSlides">
+  <h1>💖 Our Memories</h1>
+  <div class="counter" id="slideCount"></div>
+  <img id="slideImg" class="slide-img">
+  <div class="caption" id="slideText"></div>
+  <div class="controls">
+    <div class="nav-btn" onclick="prevSlide()">←</div>
+    <button class="play-btn" id="musicBtn" onclick="toggleMusic()">▶ Play</button>
+    <div class="nav-btn" onclick="nextSlide()">→</div>
+  </div>
+</div>
+
+<!-- LETTER -->
+<div class="card hidden" id="screenLetter">
+  <h1>For you, Aditi 💖</h1>
+  <div id="letterIcon" class="letter-icon" onclick="openLetter()">💌</div>
+  <h2 id="tapHint">Tap to open</h2>
+  <div id="letterWrapper" class="letter-wrapper hidden">
+    <div id="letterBox" class="letter-box"></div>
+  </div>
+</div>
+
+<audio id="music">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+</audio>
+
+<script>
+function updateCountdown(){
+  const target=new Date("2026-01-24T00:00:00+05:30");
+  const now=new Date();
+  let d=target-now;
+  if(d<=0){countdown.textContent="It's time ❤️";return;}
+  const days=Math.floor(d/86400000);
+  d%=86400000;
+  const h=Math.floor(d/3600000);
+  d%=3600000;
+  const m=Math.floor(d/60000);
+  const s=Math.floor((d%60000)/1000);
+  countdown.textContent=`${days} days ${h}h ${m}m ${s}s`;
+}
+setInterval(updateCountdown,1000);updateCountdown();
+
+function goQuestions(){screen1.classList.add("hidden");screen2.classList.remove("hidden");}
+function startQuestions(){screen2.classList.add("hidden");screenQ.classList.remove("hidden");loadQ();}
+
+const questions=[
+  {q:"Do you know how special you are to me?",yes:"🥰 Always!",no:"😜 You'll learn!"},
+  {q:"Do you remember our first talk?",yes:"😍 Magical!",no:"😏 I remind you!"},
+  {q:"Do I make you smile?",yes:"😊 Best feeling!",no:"😅 Challenge on!"},
+  {q:"Do you trust me?",yes:"❤️ Forever!",no:"🤍 I'll earn it!"},
+  {q:"Do you love surprises?",yes:"🎁 Yay!",no:"😝 Too late!"},
+  {q:"Do you feel safe with me?",yes:"🤍 Means a lot!",no:"🥺 I'll protect you!"},
+  {q:"Do I make you laugh?",yes:"😂 Mission done!",no:"😜 Trying harder!"},
+  {q:"Do you enjoy our talks?",yes:"💬 Always!",no:"😅 Improving!"},
+  {q:"Do you believe in us?",yes:"💞 Always us!",no:"😌 We will!"},
+  {q:"Do you feel understood?",yes:"🥹 I'm glad!",no:"💗 I'm here!"},
+  {q:"Do you like my care?",yes:"🤗 Come here!",no:"😏 Spoiling soon!"},
+  {q:"Do you feel happy around me?",yes:"🌸 My goal!",no:"💖 I'll fix it!"},
+  {q:"Do you miss me sometimes?",yes:"🥺 Me too!",no:"😜 Liar!"},
+  {q:"Do I matter to you?",yes:"💝 Everything!",no:"😤 Think again!"},
+  {q:"Do you like this journey?",yes:"✨ Worth it!",no:"😝 Too late!"},
+  {q:"Are you smiling now?",yes:"😊 I see it!",no:"😜 Yes you are!"},
+  {q:"Do you trust my love?",yes:"💖 Always!",no:"🥺 I'll prove it!"},
+  {q:"Do I make your day better?",yes:"🌈 Success!",no:"😅 Tomorrow!"},
+  {q:"Do you feel special?",yes:"👑 You are!",no:"💗 You should!"},
+  {q:"Do you feel loved?",yes:"❤️ My heart!",no:"🤍 I'll show you!"},
+  {q:"Do you believe in destiny?",yes:"✨ We're proof!",no:"😌 Still us!"},
+  {q:"Do you like my efforts?",yes:"🥹 Worth it!",no:"😝 Still trying!"},
+  {q:"Ready for your gift?",yes:"🎉 Finally!",no:"😏 No escape!"}
+];
+
+let qi=0;
+function loadQ(){
+  question.textContent=questions[qi].q;
+  qCounter.textContent=`${qi+1}/23`;
+  bar.style.width=((qi+1)/23*100)+"%";
+}
+function answerQ(type){
+  reaction.textContent=type==="yes"?questions[qi].yes:questions[qi].no;
+  setTimeout(()=>{
+    qi++;
+    if(qi<23){reaction.textContent="";loadQ();}
+    else{screenQ.classList.add("hidden");screenGift.classList.remove("hidden");}
+  },900);
+}
+
+let count=3,blown=false;
+function openCake(){screenGift.classList.add("hidden");screenCake.classList.remove("hidden");startBlow();}
+function startBlow(){
+  const t=setInterval(()=>{
+    cakeText.textContent=`Blow the candle in ${count}`;
+    count--;
+    if(count<0){
+      clearInterval(t);
+      cakeText.textContent="Tap the cake 🎉";
+      f1.classList.add("off");f2.classList.add("off");f3.classList.add("off");
+      blown=true;
+    }
+  },1000);
+}
+function celebrate(){
+  if(!blown)return;
+  alert("🎉 Happy Birthday Aditi 🥳🎂");
+  screenCake.classList.add("hidden");
+  screenSlides.classList.remove("hidden");
+}
+
+/* ====== GOOGLE DRIVE SLIDES (EDIT ONLY THIS LATER) ====== */
+const slides = [
+  {img:"https://lh3.googleusercontent.com/d/1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 1 💕"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 2 💖"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 3 ❤️"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 4 💫"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 5 🌸"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 6 💗"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 7 ✨"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 8 🥰"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 9 💞"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 10 💘"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 11 🌹"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 12 💝"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 13 💖"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 14 🥹"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 15 🌈"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 16 💓"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 17 ✨"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 18 💗"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 19 💖"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 20 💕"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 21 🌸"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 22 ❤️"},
+  {img:"https://drive.google.com/uc?export=view&id=1TftlVZoj-WIzic41vRO3x97vd-bwpfpi",caption:"Memory 23 💖"}
+];
+
+let s=0;
+function loadSlide(){
+  slideImg.src=slides[s].img;
+  slideText.textContent=slides[s].caption;
+  slideCount.textContent=`Photo ${s+1}/23`;
+}
+function nextSlide(){
+  if(s<22){s++;loadSlide();}
+  else{screenSlides.classList.add("hidden");screenLetter.classList.remove("hidden");}
+}
+function prevSlide(){if(s>0){s--;loadSlide();}}
+loadSlide();
+
+let playing=false;
+function toggleMusic(){
+  if(!playing){music.play();musicBtn.textContent="⏸ Pause";}
+  else{music.pause();musicBtn.textContent="▶ Play";}
+  playing=!playing;
+}
+
+const letterText=`My love ❤️
+
+From the very first day, you changed my world in ways words can't explain.
+Every smile of yours feels like home, every moment with you feels like magic.
+
+This journey was only a glimpse of how deeply you mean to me.
+
+Happy Birthday, Aditi 🎂
+Always yours,
+Sachin 💖`;
+
+function openLetter(){
+  letterIcon.classList.add("hidden");
+  tapHint.classList.add("hidden");
+  letterWrapper.classList.remove("hidden");
+  let i=0;letterBox.textContent="";
+  const t=setInterval(()=>{
+    letterBox.textContent+=letterText.charAt(i);
+    i++;if(i>=letterText.length)clearInterval(t);
+  },100);
+}
+</script>
+
+</body>
+</html>
