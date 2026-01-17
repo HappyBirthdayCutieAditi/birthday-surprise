@@ -283,7 +283,7 @@ let s=0;
 function loadSlide(){
   slideImg.src=slides[s].img;
   slideText.textContent=slides[s].caption;
-  slideCount.textContent=` ${s+1}/23`;
+  slideCount.textContent=`Memory ${s+1}/23`;
 }
 function nextSlide(){
   if(s<22){s++;loadSlide();}
